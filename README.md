@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# Lista de Tarefas (To-Do List) - Modern React & TypeScript
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este é um projeto de estudo avançado criado para reciclagem de conhecimentos em frontend, evoluindo de uma estrutura simples para uma arquitetura profissional e escalável utilizando as ferramentas mais modernas do ecossistema React em 2026.
 
-Currently, two official plugins are available:
+## 🚀 Tecnologias Utilizadas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19**: Versão mais recente, focada em performance e hooks nativos.
+- **TypeScript**: Tipagem estática rigorosa para máxima segurança e previsibilidade.
+- **Vite**: Ferramenta de build ultra-rápida.
+- **Tailwind CSS v4**: Estilização utilitária moderna com configuração via CSS.
+- **Shadcn UI & Radix UI**: Base de componentes acessíveis e estilizados.
+- **Framer Motion**: Animações fluidas de layout e interações de estado.
+- **Zod**: Validação de esquema para integridade total dos dados (runtime type checking).
+- **clsx & tailwind-merge**: Gestão inteligente e dinâmica de classes CSS.
+- **LocalStorage API**: Persistência de dados local automática e robusta.
 
-## React Compiler
+## ✨ Funcionalidades Implementadas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Arquitetura de Componentes**: UI modularizada, desacoplada e reutilizável.
+- **Edição Inline Dinâmica**: Edição rápida de tarefas com foco automático e suporte a atalhos (`Enter` para salvar, `Esc` para cancelar).
+- **Filtros Avançados**: Navegação inteligente entre Todas, Pendentes e Concluídas com contagem em tempo real.
+- **Ações em Lote**: Funcionalidade de "Limpar tarefas concluídas" para facilitar a organização.
+- **Validação de Dados com Zod**: Regras de negócio validadas rigorosamente tanto na criação quanto na edição.
+- **Acessibilidade (a11y)**: HTML semântico, Aria labels e navegação completa via teclado.
+- **Empty States**: Feedback visual amigável e contextual para listas vazias.
+- **Animações Premium**: Transições suaves de layout ao adicionar, remover ou filtrar itens usando `AnimatePresence`.
+- **Persistência Síncrona**: Sincronização automática com o `localStorage` para garantir que seus dados não sejam perdidos.
 
-## Expanding the ESLint configuration
+## 📁 Estrutura do Projeto
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+O projeto segue uma organização modular voltada para manutenção e escalabilidade:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+  components/       # Componentes de UI (UI base via Shadcn, Header, TaskInput, etc.)
+  constants/        # Constantes globais, chaves de storage e labels
+  hooks/            # Lógica de negócio e estado isolada (useTodos)
+  types/            # Definições de tipos TypeScript e esquemas de validação Zod
+  App.tsx           # Orquestrador (Maestro) da aplicação
+  index.css         # Configuração global do Tailwind v4
+  lib/              # Utilitários (ex: tailwind-merge)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 💡 Conceitos Aplicados
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Single Responsibility Principle (SRP)**: Cada componente e hook tem uma única responsabilidade clara.
+- **Custom Hooks**: Toda a lógica de negócio está 100% isolada da interface.
+- **Type-Safe Development**: Uso extensivo de TypeScript e Zod para eliminar erros comuns em tempo de desenvolvimento.
+- **Verbatim Module Syntax**: Configuração rigorosa de imports de tipos para builds mais limpos e seguros.
+- **Fast Refresh Optimization**: Separação estratégica de constantes e componentes para máxima performance no desenvolvimento com Vite.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠️ Como rodar o projeto
+
+1. Instale as dependências:
+   ```bash
+   npm install
+   ```
+
+2. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+3. Acesse no navegador: `http://localhost:5173/`
+
+4. Para gerar o build de produção:
+   ```bash
+   npm run build
+   ```
