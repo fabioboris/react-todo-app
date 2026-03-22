@@ -11,7 +11,7 @@ Este é um projeto de estudo avançado criado para reciclagem de conhecimentos e
 - **Shadcn UI & Radix UI**: Base de componentes acessíveis e estilizados.
 - **Framer Motion**: Animações fluidas de layout e interações de estado.
 - **Zod**: Validação de esquema para integridade total dos dados (runtime type checking).
-- **Supabase**: Backend as a Service (BaaS) para persistência e sincronização remota.
+- **Supabase (BaaS)**: Persistência remota, sincronização e autenticação (Magic Link).
 - **clsx & tailwind-merge**: Gestão inteligente e dinâmica de classes CSS.
 - **LocalStorage API**: Persistência de dados local automática e robusta.
 
@@ -19,6 +19,7 @@ Este é um projeto de estudo avançado criado para reciclagem de conhecimentos e
 
 - **Arquitetura de Componentes**: UI modularizada, desacoplada e reutilizável.
 - **Edição Inline Dinâmica**: Edição rápida de tarefas com foco automático e suporte a atalhos (`Enter` para salvar, `Esc` para cancelar).
+- **Autenticação Magic Link**: Login seguro e sem senha via e-mail, utilizando Supabase Auth.
 - **Filtros Avançados**: Navegação inteligente entre Todas, Pendentes e Concluídas com contagem em tempo real.
 - **Ações em Lote**: Funcionalidade de "Limpar tarefas concluídas" para facilitar a organização.
 - **Validação de Dados com Zod**: Regras de negócio validadas rigorosamente tanto na criação quanto na edição.
@@ -36,11 +37,13 @@ O projeto segue uma organização modular voltada para manutenção e escalabili
 src/
   components/       # Componentes de UI (UI base via Shadcn, Header, TaskInput, etc.)
   constants/        # Constantes globais, chaves de storage e labels
-  hooks/            # Lógica de negócio e estado isolada (useTodos)
+  hooks/            # Lógica de negócio e estado isolada (useTodos, useAuth)
   types/            # Definições de tipos TypeScript e esquemas de validação Zod
+  lib/              # Utilitários e instâncias de clientes (ex: supabase.ts)
   App.tsx           # Orquestrador (Maestro) da aplicação
   index.css         # Configuração global do Tailwind v4
-  lib/              # Utilitários (ex: tailwind-merge)
+database/
+  migrations/       # Scripts SQL para configuração do banco de dados remotos
 ```
 
 ## 💡 Conceitos Aplicados
@@ -51,23 +54,33 @@ src/
 - **Verbatim Module Syntax**: Configuração rigorosa de imports de tipos para builds mais limpos e seguros.
 - **Backend as a Service (BaaS)**: Uso de Supabase para delegar a infraestrutura de backend e banco de dados, mantendo a segurança via RLS (Row Level Security).
 - **Offline-First / Sync**: Lógica de sincronização que prioriza a UI instantânea (localStorage) e sincroniza em background com o banco remoto.
+- **Optimistic UI com Rollback**: Atualização imediata da interface com reversão automática em caso de falha na sincronização remota.
 - **Fast Refresh Optimization**: Separação estratégica de constantes e componentes para máxima performance no desenvolvimento com Vite.
 
 ## 🛠️ Como rodar o projeto
 
-1. Instale as dependências:
-   ```bash
-   npm install
-   ```
+### 1. Instalação
+```bash
+npm install
+```
 
-2. Inicie o servidor de desenvolvimento:
-   ```bash
-   npm run dev
+### 2. Configuração do Supabase
+1. Crie um projeto no [Supabase](https://supabase.com/).
+2. Execute o script SQL em `database/migrations/20260322_create_todos_table.sql` no Editor SQL do Supabase.
+3. Crie um arquivo `.env.local` na raiz do projeto baseado no `.env.example`:
+   ```env
+   VITE_SUPABASE_URL=sua_url_do_supabase
+   VITE_SUPABASE_ANON_KEY=sua_chave_anonima
    ```
+4. Certifique-se de que o **Magic Link** está habilitado em *Authentication > Providers > Email*.
 
-3. Acesse no navegador: `http://localhost:5173/`
+### 3. Execução
+```bash
+npm run dev
+```
+Acesse no navegador: `http://localhost:5173/`
 
-4. Para gerar o build de produção:
-   ```bash
-   npm run build
-   ```
+### 4. Build de Produção
+```bash
+npm run build
+```

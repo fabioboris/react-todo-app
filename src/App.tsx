@@ -4,10 +4,13 @@ import { TaskInput } from "./components/TaskInput";
 import { FilterBar } from "./components/FilterBar";
 import { TaskItem } from "./components/TaskItem";
 import { EmptyState } from "./components/EmptyState";
+import { Login } from "./components/Login";
 import { useTodos } from "./hooks/useTodos";
+import { useAuth } from "./hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function App() {
+  const { loading, isAuthenticated } = useAuth();
   const {
     tasks,
     filter,
@@ -21,13 +24,38 @@ export default function App() {
     stats,
   } = useTodos();
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="material-symbols-outlined text-4xl text-primary"
+        >
+          sync
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-surface text-on-surface min-h-screen font-sans">
+        <Header />
+        <main className="max-w-2xl mx-auto px-6 pt-20">
+          <Login />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-surface text-on-surface min-h-screen font-sans">
       <Header />
 
       <main className="max-w-2xl mx-auto px-6 pt-12 pb-32">
-        {isSyncing && (
-          <div className="flex justify-end mb-4">
+        <div className="flex justify-end mb-8 min-h-[20px]">
+          {isSyncing && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -40,8 +68,8 @@ export default function App() {
                 Sincronizando
               </span>
             </motion.div>
-          </div>
-        )}
+          )}
+        </div>
 
         <TaskInput onAddTask={addTask} />
 

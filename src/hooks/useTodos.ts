@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { TaskSchema, type Task, type FilterType } from "../types/todo";
 import { LOCAL_STORAGE_KEY } from "../constants";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { useAuth } from "./useAuth";
 
 /**
  * Helpers para mapeamento de dados entre o banco (snake_case) e o app (camelCase)
@@ -34,6 +35,7 @@ const mapLocalToRemote = (task: Task) => ({
 });
 
 export function useTodos() {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>(() => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (stored) {
@@ -56,13 +58,14 @@ export function useTodos() {
 
   // Sincronização remota: Carregar ao iniciar
   const fetchRemoteTasks = useCallback(async () => {
-    if (!isSupabaseConfigured) return;
+    if (!isSupabaseConfigured || !user) return;
     
     setIsSyncing(true);
     try {
       const { data, error } = await supabase
         .from("todos")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -75,11 +78,15 @@ export function useTodos() {
     } finally {
       setIsSyncing(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    fetchRemoteTasks();
-  }, [fetchRemoteTasks]);
+    if (user) {
+      fetchRemoteTasks();
+    } else {
+      setTasks([]);
+    }
+  }, [fetchRemoteTasks, user]);
 
   // Salvar no localStorage sempre que as tarefas mudarem
   useEffect(() => {
@@ -104,6 +111,7 @@ export function useTodos() {
       completed: false,
       metadata,
       createdAt: new Date(),
+      userId: user?.id,
     };
 
     try {
@@ -113,7 +121,7 @@ export function useTodos() {
       setTasks((prev) => [newTask, ...prev]);
 
       // Sync to remote
-      if (isSupabaseConfigured) {
+      if (isSupabaseConfigured && user) {
         const { error } = await supabase
           .from("todos")
           .insert([mapLocalToRemote(newTask)]);
