@@ -1,6 +1,8 @@
 
 import { useAuth } from "../hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
+import { ThemeToggle } from "./ThemeToggle";
+import { LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,16 +16,17 @@ export function Header() {
   const { user, signOut, isAuthenticated } = useAuth();
 
   return (
-    <header className="sticky top-0 w-full bg-slate-50/80 backdrop-blur-xl z-50 border-b border-slate-200/50">
+    <header className="sticky top-0 w-full bg-background/80 backdrop-blur-xl z-50 border-b border-border/50">
       <div className="max-w-3xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Espaçador para manter o título centralizado */}
         <div className="w-10 md:flex-1" />
 
-        <h1 className="text-xl font-bold tracking-tight text-slate-900 text-center">
+        <h1 className="text-xl font-bold tracking-tight text-foreground text-center">
           Minhas Tarefas
         </h1>
 
-        <div className="flex justify-end md:flex-1">
+        <div className="flex justify-end md:flex-1 items-center gap-2">
+          <ThemeToggle />
           <AnimatePresence>
             {isAuthenticated && (
               <DropdownMenu>
@@ -40,10 +43,10 @@ export function Header() {
                 <DropdownMenuContent align="end" className="w-56 mt-2">
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-xs text-slate-400 font-label uppercase tracking-tighter">
+                      <p className="text-xs text-muted-foreground font-label uppercase tracking-tighter">
                         Conectado como
                       </p>
-                      <p className="text-sm font-semibold text-slate-900 truncate">
+                      <p className="text-sm font-semibold text-foreground truncate">
                         {user?.email}
                       </p>
                     </div>
@@ -51,11 +54,9 @@ export function Header() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={signOut}
-                    className="text-slate-500 cursor-pointer font-bold text-xs uppercase tracking-widest gap-2"
+                    className="text-muted-foreground hover:text-error focus:text-error cursor-pointer font-bold text-xs uppercase tracking-widest gap-3"
                   >
-                    <span className="material-symbols-outlined text-base">
-                      logout
-                    </span>
+                    <LogOut className="h-4 w-4 shrink-0" />
                     Sair
                   </DropdownMenuItem>
                 </DropdownMenuContent>
