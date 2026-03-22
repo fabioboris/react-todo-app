@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 import { cn } from "../lib/utils";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 interface TaskInputProps {
   onAddTask: (title: string) => void;
@@ -29,23 +31,20 @@ export function TaskInput({ onAddTask }: TaskInputProps) {
         <span className="material-symbols-outlined text-outline">
           add_circle
         </span>
-        <input
-          className="bg-transparent border-none focus:ring-0 w-full outline-none text-lg font-body placeholder:text-outline-variant text-on-surface"
+        <Input
+          className="bg-transparent border-none focus-visible:ring-0 w-full outline-none text-lg font-body placeholder:text-outline-variant text-on-surface"
           placeholder="Nova tarefa"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <button
+        <Button
           type="submit"
           disabled={!title.trim()}
-          className={cn(
-            "bg-tertiary text-on-tertiary px-6 py-2.5 rounded-full font-semibold text-sm transition-all",
-            "hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-          )}
+          className="bg-tertiary text-on-tertiary hover:bg-tertiary/90 px-6 rounded-full font-semibold shrink-0"
         >
           Adicionar
-        </button>
+        </Button>
       </form>
     </section>
   );

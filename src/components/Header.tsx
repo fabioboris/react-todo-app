@@ -51,7 +51,7 @@ export function Header() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={signOut}
-                    className="text-slate-500 hover:text-error focus:text-error cursor-pointer font-bold text-xs uppercase tracking-widest gap-2"
+                    className="text-slate-500 cursor-pointer font-bold text-xs uppercase tracking-widest gap-2"
                   >
                     <span className="material-symbols-outlined text-base">
                       logout

@@ -1,9 +1,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Checkbox } from "./ui/checkbox";
+import { Input } from "./ui/input";
 import type { Task } from "../types/todo";
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
+import { Button } from "./ui/button";
 
 interface TaskItemProps {
   task: Task;
@@ -73,10 +75,10 @@ export function TaskItem({
         />
       </div>
       <div className="flex-1 min-w-0">
-        <input
+        <Input
           ref={inputRef}
           className={cn(
-            "w-full bg-transparent border-none p-0 focus:ring-0 font-body text-base leading-relaxed outline-none transition-all",
+            "h-auto w-full bg-transparent border-none p-0 focus-visible:ring-0 font-body text-base leading-relaxed outline-none transition-all",
             task.completed ? "line-through text-on-surface-variant" : "text-on-surface"
           )}
           type="text"
@@ -91,13 +93,15 @@ export function TaskItem({
           {metadataText}
         </p>
       </div>
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => onDelete(task.id)}
-        className="opacity-0 group-hover:opacity-100 p-2 text-outline hover:text-error transition-all focus:opacity-100"
+        className="opacity-0 group-hover:opacity-100 text-outline hover:text-error hover:bg-error/10 transition-all focus:opacity-100"
         title="Excluir tarefa"
       >
         <span className="material-symbols-outlined text-xl">delete</span>
-      </button>
+      </Button>
     </motion.div>
   );
 }
