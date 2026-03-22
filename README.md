@@ -9,6 +9,7 @@ Este é um projeto de estudo avançado criado para reciclagem de conhecimentos e
 - **Vite**: Ferramenta de build ultra-rápida.
 - **Tailwind CSS v4**: Estilização utilitária moderna com configuração via CSS.
 - **Shadcn UI & Radix UI**: Base de componentes acessíveis e estilizados.
+- **Next Themes**: Gerenciamento de temas claro/escuro com detecção automática do sistema.
 - **Framer Motion**: Animações fluidas de layout e interações de estado.
 - **Zod**: Validação de esquema para integridade total dos dados (runtime type checking).
 - **Supabase (BaaS)**: Persistência remota, sincronização e autenticação (Magic Link).
@@ -22,6 +23,7 @@ Este é um projeto de estudo avançado criado para reciclagem de conhecimentos e
 - **Autenticação Magic Link**: Login seguro e sem senha via e-mail, utilizando Supabase Auth.
 - **Filtros Avançados**: Navegação inteligente entre Todas, Pendentes e Concluídas com contagem em tempo real.
 - **Ações em Lote**: Funcionalidade de "Limpar tarefas concluídas" para facilitar a organização.
+- **Suporte a Temas (Dark/Light)**: Interface adaptável com paleta de cores Slate/Blue otimizada para baixo contraste no modo escuro.
 - **Validação de Dados com Zod**: Regras de negócio validadas rigorosamente tanto na criação quanto na edição.
 - **Acessibilidade (a11y)**: HTML semântico, Aria labels e navegação completa via teclado.
 - **Empty States**: Feedback visual amigável e contextual para listas vazias.
