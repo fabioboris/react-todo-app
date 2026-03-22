@@ -6,6 +6,7 @@ export const TaskSchema = z.object({
   completed: z.boolean().default(false),
   metadata: z.string().optional(),
   createdAt: z.date(),
+  userId: z.uuid().optional(),
 });
 
 export type Task = z.infer<typeof TaskSchema>;

@@ -11,6 +11,7 @@ Este é um projeto de estudo avançado criado para reciclagem de conhecimentos e
 - **Shadcn UI & Radix UI**: Base de componentes acessíveis e estilizados.
 - **Framer Motion**: Animações fluidas de layout e interações de estado.
 - **Zod**: Validação de esquema para integridade total dos dados (runtime type checking).
+- **Supabase**: Backend as a Service (BaaS) para persistência e sincronização remota.
 - **clsx & tailwind-merge**: Gestão inteligente e dinâmica de classes CSS.
 - **LocalStorage API**: Persistência de dados local automática e robusta.
 
@@ -24,7 +25,8 @@ Este é um projeto de estudo avançado criado para reciclagem de conhecimentos e
 - **Acessibilidade (a11y)**: HTML semântico, Aria labels e navegação completa via teclado.
 - **Empty States**: Feedback visual amigável e contextual para listas vazias.
 - **Animações Premium**: Transições suaves de layout ao adicionar, remover ou filtrar itens usando `AnimatePresence`.
-- **Persistência Síncrona**: Sincronização automática com o `localStorage` para garantir que seus dados não sejam perdidos.
+- **Sincronização Remota (Supabase)**: Persistência em nuvem com arquitetura BaaS e segurança via Row Level Security (RLS).
+- **Persistência Síncrona**: Sincronização automática com o `localStorage` para garantir que seus dados não sejam perdidos, mesmo offline.
 
 ## 📁 Estrutura do Projeto
 
@@ -47,6 +49,8 @@ src/
 - **Custom Hooks**: Toda a lógica de negócio está 100% isolada da interface.
 - **Type-Safe Development**: Uso extensivo de TypeScript e Zod para eliminar erros comuns em tempo de desenvolvimento.
 - **Verbatim Module Syntax**: Configuração rigorosa de imports de tipos para builds mais limpos e seguros.
+- **Backend as a Service (BaaS)**: Uso de Supabase para delegar a infraestrutura de backend e banco de dados, mantendo a segurança via RLS (Row Level Security).
+- **Offline-First / Sync**: Lógica de sincronização que prioriza a UI instantânea (localStorage) e sincroniza em background com o banco remoto.
 - **Fast Refresh Optimization**: Separação estratégica de constantes e componentes para máxima performance no desenvolvimento com Vite.
 
 ## 🛠️ Como rodar o projeto

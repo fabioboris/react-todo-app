@@ -17,6 +17,7 @@ export default function App() {
     deleteTask,
     updateTask,
     clearCompleted,
+    isSyncing,
     stats,
   } = useTodos();
 
@@ -25,6 +26,23 @@ export default function App() {
       <Header />
 
       <main className="max-w-2xl mx-auto px-6 pt-12 pb-32">
+        {isSyncing && (
+          <div className="flex justify-end mb-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-2 text-outline-variant"
+            >
+              <span className="material-symbols-outlined animate-spin text-sm">
+                sync
+              </span>
+              <span className="text-xs font-label uppercase tracking-tighter">
+                Sincronizando
+              </span>
+            </motion.div>
+          </div>
+        )}
+
         <TaskInput onAddTask={addTask} />
 
         <FilterBar

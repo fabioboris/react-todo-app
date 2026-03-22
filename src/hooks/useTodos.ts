@@ -1,6 +1,37 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { TaskSchema, type Task, type FilterType } from "../types/todo";
 import { LOCAL_STORAGE_KEY } from "../constants";
+import { supabase, isSupabaseConfigured } from "../lib/supabase";
+
+/**
+ * Helpers para mapeamento de dados entre o banco (snake_case) e o app (camelCase)
+ */
+interface RemoteTask {
+  id: string;
+  title: string;
+  completed: boolean;
+  metadata?: string | null;
+  created_at: string;
+  user_id?: string | null;
+}
+
+const mapRemoteToLocal = (task: RemoteTask): Task => ({
+  id: task.id,
+  title: task.title,
+  completed: task.completed,
+  metadata: task.metadata || undefined,
+  createdAt: new Date(task.created_at),
+  userId: task.user_id || undefined,
+});
+
+const mapLocalToRemote = (task: Task) => ({
+  id: task.id,
+  title: task.title,
+  completed: task.completed,
+  metadata: task.metadata,
+  created_at: task.createdAt.toISOString(),
+  user_id: task.userId,
+});
 
 export function useTodos() {
   const [tasks, setTasks] = useState<Task[]>(() => {
@@ -21,7 +52,36 @@ export function useTodos() {
   });
 
   const [filter, setFilter] = useState<FilterType>("all");
+  const [isSyncing, setIsSyncing] = useState(false);
 
+  // Sincronização remota: Carregar ao iniciar
+  const fetchRemoteTasks = useCallback(async () => {
+    if (!isSupabaseConfigured) return;
+    
+    setIsSyncing(true);
+    try {
+      const { data, error } = await supabase
+        .from("todos")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        setTasks(data.map(mapRemoteToLocal));
+      }
+    } catch (error) {
+      console.warn("Falha ao sincronizar remotamente. Usando apenas local.", error);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRemoteTasks();
+  }, [fetchRemoteTasks]);
+
+  // Salvar no localStorage sempre que as tarefas mudarem
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tasks));
   }, [tasks]);
@@ -37,58 +97,172 @@ export function useTodos() {
     }
   }, [tasks, filter]);
 
-  const addTask = (title: string, metadata?: string) => {
-    try {
-      const newTaskData = {
-        id: crypto.randomUUID(),
-        title,
-        completed: false,
-        metadata,
-        createdAt: new Date(),
-      };
+  const addTask = async (title: string, metadata?: string) => {
+    const newTaskData = {
+      id: crypto.randomUUID(),
+      title,
+      completed: false,
+      metadata,
+      createdAt: new Date(),
+    };
 
+    try {
       const newTask = TaskSchema.parse(newTaskData);
+      
+      // Update local state instantly (Optimistic UI)
       setTasks((prev) => [newTask, ...prev]);
+
+      // Sync to remote
+      if (isSupabaseConfigured) {
+        const { error } = await supabase
+          .from("todos")
+          .insert([mapLocalToRemote(newTask)]);
+        
+        if (error) throw error;
+      }
     } catch (error) {
-      console.error("Erro ao validar nova tarefa:", error);
+      console.error("Erro ao adicionar tarefa:", error);
+      // Rollback local state
+      setTasks((prev) => prev.filter(t => t.id !== newTaskData.id));
     }
   };
 
-  const toggleTask = (id: string) => {
+  const toggleTask = async (id: string) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+
+    const previousStatus = task.completed;
+    const newStatus = !previousStatus;
+
+    // Update local state instantly (Optimistic UI)
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
+      prev.map((t) => (t.id === id ? { ...t, completed: newStatus } : t))
     );
-  };
 
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
-  };
-
-  const updateTask = (id: string, title: string) => {
-    try {
-      setTasks((prev) =>
-        prev.map((task) => {
-          if (task.id === id) {
-            const updatedTask = { ...task, title };
-            TaskSchema.parse(updatedTask);
-            return updatedTask;
-          }
-          return task;
-        })
-      );
-    } catch (error) {
-      console.error("Erro ao validar atualização da tarefa:", error);
+    // Sync to remote
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase
+          .from("todos")
+          .update({ completed: newStatus })
+          .eq("id", id);
+        
+        if (error) throw error;
+      } catch (error) {
+        console.error("Erro ao atualizar tarefa remotamente:", error);
+        // Rollback local state
+        setTasks((prev) =>
+          prev.map((t) => (t.id === id ? { ...t, completed: previousStatus } : t))
+        );
+      }
     }
   };
 
-  const clearCompleted = () => {
-    setTasks((prev) => prev.filter((task) => !task.completed));
+  const deleteTask = async (id: string) => {
+    const taskToDelete = tasks.find(t => t.id === id);
+    if (!taskToDelete) return;
+
+    // Update local state instantly (Optimistic UI)
+    setTasks((prev) => prev.filter((task) => task.id !== id));
+
+    // Sync to remote
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from("todos").delete().eq("id", id);
+        if (error) throw error;
+      } catch (error) {
+        console.error("Erro ao excluir tarefa remotamente:", error);
+        // Rollback local state
+        setTasks((prev) => [taskToDelete, ...prev].sort((a, b) => 
+          b.createdAt.getTime() - a.createdAt.getTime()
+        ));
+      }
+    }
   };
 
-  const markAllAsCompleted = () => {
+  const updateTask = async (id: string, title: string) => {
+    const originalTask = tasks.find(t => t.id === id);
+    if (!originalTask) return;
+
+    try {
+      const updatedTask = { ...originalTask, title };
+      TaskSchema.parse(updatedTask);
+
+      // Update local state instantly (Optimistic UI)
+      setTasks((prev) =>
+        prev.map((task) => (task.id === id ? updatedTask : task))
+      );
+
+      // Sync to remote
+      if (isSupabaseConfigured) {
+        const { error } = await supabase
+          .from("todos")
+          .update({ title })
+          .eq("id", id);
+        
+        if (error) throw error;
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar título remotamente:", error);
+      // Rollback local state
+      setTasks((prev) =>
+        prev.map((task) => (task.id === id ? originalTask : task))
+      );
+    }
+  };
+
+  const clearCompleted = async () => {
+    const completedTasks = tasks.filter((task) => task.completed);
+    if (completedTasks.length === 0) return;
+
+    const completedIds = completedTasks.map((task) => task.id);
+
+    // Update local state instantly (Optimistic UI)
+    setTasks((prev) => prev.filter((task) => !task.completed));
+
+    // Sync to remote
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from("todos").delete().in("id", completedIds);
+        if (error) throw error;
+      } catch (error) {
+        console.error("Erro ao limpar tarefas concluídas remotamente:", error);
+        // Rollback local state
+        setTasks((prev) => [...prev, ...completedTasks].sort((a, b) => 
+          b.createdAt.getTime() - a.createdAt.getTime()
+        ));
+      }
+    }
+  };
+
+  const markAllAsCompleted = async () => {
+    const pendingTasks = tasks.filter((task) => !task.completed);
+    if (pendingTasks.length === 0) return;
+
+    const pendingIds = pendingTasks.map((task) => task.id);
+
+    // Update local state instantly (Optimistic UI)
     setTasks((prev) => prev.map((task) => ({ ...task, completed: true })));
+
+    // Sync to remote
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase
+          .from("todos")
+          .update({ completed: true })
+          .in("id", pendingIds);
+        
+        if (error) throw error;
+      } catch (error) {
+        console.error("Erro ao marcar todas como concluídas remotamente:", error);
+        // Rollback local state
+        setTasks((prev) =>
+          prev.map((task) => 
+            pendingIds.includes(task.id) ? { ...task, completed: false } : task
+          )
+        );
+      }
+    }
   };
 
   const stats = useMemo(() => {
@@ -112,6 +286,7 @@ export function useTodos() {
     updateTask,
     clearCompleted,
     markAllAsCompleted,
+    isSyncing,
     stats,
   };
 }
