@@ -31,11 +31,3 @@ create policy "Users can update their own tasks"
 create policy "Users can delete their own tasks"
   on public.todos for delete
   using (auth.uid() = user_id);
-
--- Create policy for anonymous users (if you want to allow sync without auth initially)
--- Note: In production, it's safer to require authentication.
--- For now, allowing all access for the anonymous key if RLS is enabled but no user_id is provided
-create policy "Anon can do everything for now"
-  on public.todos for all
-  using (true)
-  with check (true);
