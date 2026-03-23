@@ -62,7 +62,7 @@ export const todoService = {
   async updateTask(id: string, updates: Partial<Pick<Task, 'title' | 'completed'>>): Promise<void> {
     if (!isSupabaseConfigured) return;
     
-    const remoteUpdates: any = {};
+    const remoteUpdates: { title?: string; completed?: boolean } = {};
     if (updates.title !== undefined) remoteUpdates.title = updates.title;
     if (updates.completed !== undefined) remoteUpdates.completed = updates.completed;
 

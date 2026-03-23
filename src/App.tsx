@@ -2,12 +2,13 @@
 import { Header } from "./components/Header";
 import { TaskInput } from "./components/TaskInput";
 import { FilterBar } from "./components/FilterBar";
-import { TaskItem } from "./components/TaskItem";
-import { EmptyState } from "./components/EmptyState";
+import { TaskList } from "./components/TaskList";
 import { Login } from "./components/Login";
 import { useTodos } from "./hooks/useTodos";
 import { useAuth } from "./hooks/useAuth";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { Loader2, Trash2 } from "lucide-react";
+import { Button } from "./components/ui/button";
 
 export default function App() {
   const { loading, isAuthenticated } = useAuth();
@@ -26,22 +27,16 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="material-symbols-outlined text-4xl text-primary"
-        >
-          sync
-        </motion.div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-10 w-10 text-primary animate-spin" />
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="bg-surface text-on-surface min-h-screen font-sans">
-        <Header />
+      <div className="bg-background text-foreground min-h-screen font-sans">
+        <Header isSyncing={isSyncing} />
         <main className="max-w-2xl mx-auto px-6 pt-20">
           <Login />
         </main>
@@ -50,27 +45,10 @@ export default function App() {
   }
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen font-sans">
-      <Header />
+    <div className="bg-background text-foreground min-h-screen font-sans">
+      <Header isSyncing={isSyncing} />
 
       <main className="max-w-2xl mx-auto px-6 pt-12 pb-32">
-        <div className="flex justify-end mb-8 min-h-[20px]">
-          {isSyncing && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-2 text-outline-variant"
-            >
-              <span className="material-symbols-outlined animate-spin text-sm">
-                sync
-              </span>
-              <span className="text-xs font-label uppercase tracking-tighter">
-                Sincronizando
-              </span>
-            </motion.div>
-          )}
-        </div>
-
         <TaskInput onAddTask={addTask} />
 
         <FilterBar
@@ -79,37 +57,28 @@ export default function App() {
           pendingCount={stats.pending}
         />
 
-        <motion.div layout className="space-y-4">
-          <AnimatePresence mode="popLayout">
-            {tasks.length > 0 ? (
-              tasks.map((task) => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  onToggle={toggleTask}
-                  onDelete={deleteTask}
-                  onUpdate={updateTask}
-                />
-              ))
-            ) : (
-              <EmptyState filter={filter} />
-            )}
-          </AnimatePresence>
-        </motion.div>
+        <TaskList
+          tasks={tasks}
+          filter={filter}
+          onToggle={toggleTask}
+          onDelete={deleteTask}
+          onUpdate={updateTask}
+        />
 
         {stats.hasCompleted && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-8 flex justify-center"
+            className="mt-12 flex justify-center"
           >
-            <button
+            <Button
+              variant="ghost"
               onClick={clearCompleted}
-              className="text-sm text-outline hover:text-error transition-colors font-medium flex items-center gap-2"
+              className="text-muted-foreground hover:text-destructive gap-2 font-semibold uppercase tracking-widest text-[10px]"
             >
-              <span className="material-symbols-outlined text-lg">delete_sweep</span>
-              Limpar tarefas concluídas
-            </button>
+              <Trash2 className="h-4 w-4" />
+              Limpar concluídas
+            </Button>
           </motion.div>
         )}
       </main>

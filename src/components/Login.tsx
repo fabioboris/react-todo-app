@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { LogIn, Mail, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -57,9 +58,7 @@ export function Login() {
             <Card className="border-none shadow-2xl bg-surface-container-lowest">
               <CardHeader className="space-y-4 pt-8">
                 <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-2">
-                  <span className="material-symbols-outlined text-4xl">
-                    login
-                  </span>
+                  <LogIn className="h-10 w-10" />
                 </div>
                 <CardTitle className="text-3xl font-extrabold font-heading tracking-tight">
                   Bem-vindo
@@ -79,13 +78,11 @@ export function Login() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={cn(
-                          "h-14 px-4 rounded-xl border-2 border-transparent bg-surface-container-low focus:bg-surface-container-lowest transition-all text-lg",
+                          "h-14 px-4 pr-12 rounded-xl border-2 border-transparent bg-surface-container-low focus:bg-surface-container-lowest transition-all text-lg",
                           error && "border-error/20 bg-error-container/5"
                         )}
                       />
-                      <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline-variant group-focus-within:text-primary transition-colors">
-                        alternate_email
-                      </span>
+                      <Mail className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 text-outline-variant group-focus-within:text-primary transition-colors" />
                     </div>
                   </div>
 
@@ -95,19 +92,24 @@ export function Login() {
                       animate={{ opacity: 1, y: 0 }}
                       className="text-error text-sm font-medium flex items-center gap-2 bg-error/5 p-3 rounded-lg"
                     >
-                      <span className="material-symbols-outlined text-lg">
-                        error
-                      </span>
+                      <AlertCircle className="h-5 w-5 shrink-0" />
                       {error}
                     </motion.p>
                   )}
 
                   <Button
                     type="submit"
-                    disabled={isLoading || !email}
-                    className="w-full h-14 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                    disabled={isLoading}
+                    className="w-full h-14 rounded-xl text-lg font-bold bg-primary text-on-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                   >
-                    {isLoading ? "Enviando..." : "Enviar link mágico"}
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
+                        Enviando...
+                      </div>
+                    ) : (
+                      "Receber Link Mágico"
+                    )}
                   </Button>
                 </form>
               </CardContent>
@@ -116,24 +118,28 @@ export function Login() {
         ) : (
           <motion.div
             key="login-success"
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-md"
           >
-            <Card className="border-none shadow-2xl bg-surface-container-lowest py-8">
-              <CardContent className="space-y-6">
-                <div className="mx-auto w-20 h-20 rounded-full bg-success/10 flex items-center justify-center text-success animate-bounce">
-                  <span className="material-symbols-outlined text-5xl">
-                    mark_email_read
-                  </span>
+            <Card className="border-none shadow-2xl bg-surface-container-lowest overflow-hidden">
+              <div className="h-2 bg-primary" />
+              <CardHeader className="space-y-4 pt-8">
+                <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                  <CheckCircle2 className="h-10 w-10" />
                 </div>
-                <div className="space-y-2">
-                  <h1 className="text-3xl font-extrabold font-heading tracking-tight">
-                    Verifique seu e-mail
-                  </h1>
-                  <p className="text-on-surface-variant font-body leading-relaxed text-lg">
-                    Enviamos um link mágico para{" "}
-                    <strong className="text-on-surface">{email}</strong>.
+                <CardTitle className="text-3xl font-extrabold font-heading tracking-tight">
+                  Link Enviado!
+                </CardTitle>
+                <CardDescription className="text-base text-on-surface-variant font-body px-4">
+                  Enviamos um link de acesso para <br />
+                  <span className="font-bold text-on-surface">{email}</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-8 space-y-6">
+                <div className="bg-surface-container-low p-4 rounded-xl">
+                  <p className="text-sm text-on-surface-variant leading-relaxed">
+                    Verifique sua caixa de entrada e clique no link para entrar automaticamente.
                   </p>
                 </div>
                 <Button
@@ -141,9 +147,7 @@ export function Login() {
                   onClick={() => setIsSent(false)}
                   className="text-primary font-semibold hover:bg-primary/5 gap-2"
                 >
-                  <span className="material-symbols-outlined text-lg">
-                    arrow_back
-                  </span>
+                  <ArrowLeft className="h-5 w-5" />
                   Tentar outro e-mail
                 </Button>
               </CardContent>

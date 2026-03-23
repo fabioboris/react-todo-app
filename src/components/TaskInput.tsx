@@ -3,6 +3,7 @@ import { useState } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { PlusCircle } from "lucide-react";
 
 interface TaskInputProps {
   onAddTask: (title: string) => void;
@@ -28,9 +29,7 @@ export function TaskInput({ onAddTask }: TaskInputProps) {
           "focus-within:bg-surface-container-lowest focus-within:ring-2 focus-within:ring-tertiary/10"
         )}
       >
-        <span className="material-symbols-outlined text-outline">
-          add_circle
-        </span>
+        <PlusCircle className="h-6 w-6 text-outline shrink-0" />
         <Input
           className="bg-transparent border-none focus-visible:ring-0 w-full outline-none text-lg font-body placeholder:text-outline-variant text-on-surface"
           placeholder="Nova tarefa"

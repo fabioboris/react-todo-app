@@ -2,7 +2,7 @@
 import { useAuth } from "../hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
-import { LogOut } from "lucide-react";
+import { LogOut, RefreshCw } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,20 +12,40 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-export function Header() {
+interface HeaderProps {
+  isSyncing?: boolean;
+}
+
+export function Header({ isSyncing }: HeaderProps) {
   const { user, signOut, isAuthenticated } = useAuth();
 
   return (
     <header className="sticky top-0 w-full bg-background/80 backdrop-blur-xl z-50 border-b border-border/50">
       <div className="max-w-3xl mx-auto px-6 py-4 flex justify-between items-center">
-        {/* Espaçador para manter o título centralizado */}
-        <div className="w-10 md:flex-1" />
+        <div className="flex-1 flex items-center gap-3">
+          <AnimatePresence>
+            {isSyncing && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="flex items-center gap-2 text-muted-foreground"
+                title="Sincronizando com a nuvem"
+              >
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                <span className="text-[10px] font-bold uppercase tracking-tighter hidden md:inline">
+                  Sincronizando
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <h1 className="text-xl font-bold tracking-tight text-foreground text-center">
           Minhas Tarefas
         </h1>
 
-        <div className="flex justify-end md:flex-1 items-center gap-2">
+        <div className="flex justify-end flex-1 items-center gap-2">
           <ThemeToggle />
           <AnimatePresence>
             {isAuthenticated && (
