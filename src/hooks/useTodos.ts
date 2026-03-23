@@ -1,38 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { TaskSchema, type Task, type FilterType } from "../types/todo";
 import { LOCAL_STORAGE_KEY } from "../constants";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { useAuth } from "./useAuth";
-
-/**
- * Helpers para mapeamento de dados entre o banco (snake_case) e o app (camelCase)
- */
-interface RemoteTask {
-  id: string;
-  title: string;
-  completed: boolean;
-  metadata?: string | null;
-  created_at: string;
-  user_id?: string | null;
-}
-
-const mapRemoteToLocal = (task: RemoteTask): Task => ({
-  id: task.id,
-  title: task.title,
-  completed: task.completed,
-  metadata: task.metadata || undefined,
-  createdAt: new Date(task.created_at),
-  userId: task.user_id || undefined,
-});
-
-const mapLocalToRemote = (task: Task) => ({
-  id: task.id,
-  title: task.title,
-  completed: task.completed,
-  metadata: task.metadata,
-  created_at: task.createdAt.toISOString(),
-  user_id: task.userId,
-});
+import { todoService } from "../services/todoService";
 
 export function useTodos() {
   const { user } = useAuth();
@@ -62,17 +33,8 @@ export function useTodos() {
     
     setIsSyncing(true);
     try {
-      const { data, error } = await supabase
-        .from("todos")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      if (data) {
-        setTasks(data.map(mapRemoteToLocal));
-      }
+      const remoteTasks = await todoService.fetchTasks(user.id);
+      setTasks(remoteTasks);
     } catch (error) {
       console.warn("Falha ao sincronizar remotamente. Usando apenas local.", error);
     } finally {
@@ -122,11 +84,7 @@ export function useTodos() {
 
       // Sync to remote
       if (isSupabaseConfigured && user) {
-        const { error } = await supabase
-          .from("todos")
-          .insert([mapLocalToRemote(newTask)]);
-        
-        if (error) throw error;
+        await todoService.addTask(newTask);
       }
     } catch (error) {
       console.error("Erro ao adicionar tarefa:", error);
@@ -150,12 +108,7 @@ export function useTodos() {
     // Sync to remote
     if (isSupabaseConfigured) {
       try {
-        const { error } = await supabase
-          .from("todos")
-          .update({ completed: newStatus })
-          .eq("id", id);
-        
-        if (error) throw error;
+        await todoService.updateTask(id, { completed: newStatus });
       } catch (error) {
         console.error("Erro ao atualizar tarefa remotamente:", error);
         // Rollback local state
@@ -176,8 +129,7 @@ export function useTodos() {
     // Sync to remote
     if (isSupabaseConfigured) {
       try {
-        const { error } = await supabase.from("todos").delete().eq("id", id);
-        if (error) throw error;
+        await todoService.deleteTask(id);
       } catch (error) {
         console.error("Erro ao excluir tarefa remotamente:", error);
         // Rollback local state
@@ -203,12 +155,7 @@ export function useTodos() {
 
       // Sync to remote
       if (isSupabaseConfigured) {
-        const { error } = await supabase
-          .from("todos")
-          .update({ title })
-          .eq("id", id);
-        
-        if (error) throw error;
+        await todoService.updateTask(id, { title });
       }
     } catch (error) {
       console.error("Erro ao atualizar título remotamente:", error);
@@ -231,8 +178,7 @@ export function useTodos() {
     // Sync to remote
     if (isSupabaseConfigured) {
       try {
-        const { error } = await supabase.from("todos").delete().in("id", completedIds);
-        if (error) throw error;
+        await todoService.deleteTasks(completedIds);
       } catch (error) {
         console.error("Erro ao limpar tarefas concluídas remotamente:", error);
         // Rollback local state
@@ -255,12 +201,7 @@ export function useTodos() {
     // Sync to remote
     if (isSupabaseConfigured) {
       try {
-        const { error } = await supabase
-          .from("todos")
-          .update({ completed: true })
-          .in("id", pendingIds);
-        
-        if (error) throw error;
+        await todoService.markTasksAsCompleted(pendingIds);
       } catch (error) {
         console.error("Erro ao marcar todas como concluídas remotamente:", error);
         // Rollback local state

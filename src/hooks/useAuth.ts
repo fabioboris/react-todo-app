@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured } from "../lib/supabase";
 import type { User, Session } from "@supabase/supabase-js";
+import { authService } from "../services/authService";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -13,14 +14,14 @@ export function useAuth() {
     }
 
     // Carregar sessão inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    authService.getSession().then((session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
     // Escutar mudanças na autenticação (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = authService.onAuthStateChange(
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
@@ -34,24 +35,11 @@ export function useAuth() {
   }, []);
 
   const signInWithMagicLink = async (email: string) => {
-    if (!isSupabaseConfigured) {
-      throw new Error("Supabase não configurado corretamente.");
-    }
-    
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
-    
-    if (error) throw error;
+    await authService.signInWithMagicLink(email);
   };
 
   const signOut = async () => {
-    if (!isSupabaseConfigured) return;
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    await authService.signOut();
   };
 
   return {
